@@ -1,0 +1,17 @@
+{
+  "name": "demo-line-ai-translate-bot",
+  "version": "0.1.0",
+  "private": true,
+  "description": "LINE group chat auto-translation bot (ja<->en) on Cloudflare Workers + D1, with a numeric translation-quality evaluation harness. Portfolio demo, fictional data only.",
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "eval": "node eval/run-eval.js",
+    "dev": "wrangler dev --local",
+    "migrate:local": "wrangler d1 migrations apply demo-line-ai-translate-bot-db --local"
+  },
+  "devDependencies": {
+    "wrangler": "^4.138.0"
+  }
+}

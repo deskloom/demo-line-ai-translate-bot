@@ -1,0 +1,14 @@
+{
+  "id": "short-answer-ja-to-en",
+  "description": "A 1-3 word fragment with no predicate, answering a preceding question, must be translated as a full answer (not a literal noun dump).",
+  "sourceLang": "ja",
+  "targetLang": "en",
+  "contextMessages": [
+    { "speakerLabel": "host-mother", "lang": "en", "text": "How do you usually get to school?" }
+  ],
+  "text": "電車",
+  "checks": {
+    "mustMatch": ["\\btrain\\b"],
+    "mustNotMatch": ["^Train\\.?$"]
+  }
+}

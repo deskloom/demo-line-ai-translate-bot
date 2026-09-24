@@ -1,0 +1,11 @@
+{
+  "id": "emoji-only-no-reply",
+  "description": "Emoji/stamp-only text carries nothing to translate; the pipeline must produce no reply (isUntranslatable short-circuits before ever calling the model).",
+  "sourceLang": "ja",
+  "targetLang": "en",
+  "contextMessages": [],
+  "text": "😂😂😂",
+  "checks": {
+    "mustBeEmpty": true
+  }
+}

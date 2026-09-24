@@ -1,0 +1,12 @@
+{
+  "id": "multi-paragraph-long-text",
+  "description": "A multi-paragraph message (host family describing the weekend homestay schedule) must be translated in full, preserving all three paragraphs' content and the proper noun Kenji.",
+  "sourceLang": "ja",
+  "targetLang": "en",
+  "contextMessages": [],
+  "text": "今週末は土曜日の朝に近くの神社にお祭りを見に行く予定です。健二も一緒に行くと思います。\n\n お昼はお祭りの屋台でご飯を食べましょう。たこ焼きとかき氷が美味しいですよ。\n\n夜は花火大会があるので、浴衣を着て見に行きませんか。写真もたくさん撮りたいです。",
+  "checks": {
+    "mustMatch": ["shrine|festival", "takoyaki|shaved ice|kakigori", "fireworks", "Kenji"],
+    "mustNotMatch": []
+  }
+}

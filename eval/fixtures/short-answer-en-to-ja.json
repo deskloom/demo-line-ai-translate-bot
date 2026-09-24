@@ -1,0 +1,14 @@
+{
+  "id": "short-answer-en-to-ja",
+  "description": "A short English fragment answering a preceding Japanese question must become a full Japanese answer sentence, not a bare word.",
+  "sourceLang": "en",
+  "targetLang": "ja",
+  "contextMessages": [
+    { "speakerLabel": "host-mother", "lang": "ja", "text": "晩ごはん、お肉と魚どっちがいい？" }
+  ],
+  "text": "Meat",
+  "checks": {
+    "mustMatch": ["肉"],
+    "mustNotMatch": ["^肉$"]
+  }
+}

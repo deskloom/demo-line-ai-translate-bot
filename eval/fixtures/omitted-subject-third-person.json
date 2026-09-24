@@ -1,0 +1,15 @@
+{
+  "id": "omitted-subject-third-person",
+  "description": "Omitted subject after context about a third person (host family talking about their son Kenji) must keep Kenji as subject, not the speaker. Sentence-final particles/hedges (〜わ, たぶん) must not be read as first-person evidence.",
+  "sourceLang": "ja",
+  "targetLang": "en",
+  "contextMessages": [
+    { "speakerLabel": "host-mother", "lang": "ja", "text": "健二は今日、部活の後に友達と出かけるみたい。" },
+    { "speakerLabel": "student", "lang": "en", "text": "Oh, where is he going?" }
+  ],
+  "text": "多分カラオケに行くと思うわ。",
+  "checks": {
+    "mustMatch": ["\\b(he|Kenji)\\b", "\\bkaraoke\\b"],
+    "mustNotMatch": ["\\bI('m| am)\\b (going|planning)", "\\bI\\b (go|will go)\\b"]
+  }
+}
