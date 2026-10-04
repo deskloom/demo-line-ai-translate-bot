@@ -109,7 +109,7 @@ DRY_RUN経路とモック翻訳経路を検証）し、以下を実施:
 - ログに `[line] DRY_RUN reply (no LINE_CHANNEL_ACCESS_TOKEN)` が出力され、LINEへは実際に
   送信せず、送信予定のペイロードだけがログされることを確認。
 - 不正な署名（`--bad-signature`）で送信 → **`401 invalid signature`**
-※本デモでは `wrangler deploy` や実Cloudflareアカウントへの操作は一切行っていない。
+  ※本デモでは `wrangler deploy` や実Cloudflareアカウントへの操作は一切行っていない。
 
 ### 3. 評価ハーネスの実本番実行（Gemini API）
 
