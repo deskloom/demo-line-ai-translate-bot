@@ -79,14 +79,14 @@ D1は `test/fakeD1.js`（`prepare().bind().run()/all()`のインメモリ実装�
 
 ## 動作確認（実施済み）
 
-以下はすべて実際に実行して確認した結果です（2026-09-25、Windows + Git Bash）。
+以下はすべて実際に実行して確認した結果です（ユニットテストは2026-10-05、wrangler dev・評価の実行は2026-09-25。Windows + Git Bash）。
 
 ### 1. ユニットテスト
 
 ```
 npm test
 ```
-結果: **43 tests, 43 pass, 0 fail**（signature / lang / chunk / translate / line / db / index の各モジュール）。
+結果: **51 tests, 51 pass, 0 fail**（signature / lang / chunk / translate / line / db / index の各モジュール）。
 
 ### 2. ローカル `wrangler dev`
 
@@ -109,8 +109,7 @@ DRY_RUN経路とモック翻訳経路を検証）し、以下を実施:
 - ログに `[line] DRY_RUN reply (no LINE_CHANNEL_ACCESS_TOKEN)` が出力され、LINEへは実際に
   送信せず、送信予定のペイロードだけがログされることを確認。
 - 不正な署名（`--bad-signature`）で送信 → **`401 invalid signature`**
-- 検証後、起動していた `wrangler dev` のプロセス（workerd・npxラッパー）は全て停止済み。
-  ※本デモでは `wrangler deploy` や実Cloudflareアカウントへの操作は一切行っていない。
+※本デモでは `wrangler deploy` や実Cloudflareアカウントへの操作は一切行っていない。
 
 ### 3. 評価ハーネスの実本番実行（Gemini API）
 
@@ -130,7 +129,7 @@ isUntranslatable()でモデル呼び出し自体をスキップするため0回�
 ヘッジ表現は誤りとみなさない。また三人称の主語は `(he|Kenji)` のどちらでも合格とする
 （文脈中の名前を使う訳も正解のため）。
 
-#### 結果（実行日: 2026-09-25）
+#### 結果（実行日: 2026-09-24。日付はUTC基準）
 
 | ケース | 結果 |
 |---|---|
@@ -142,7 +141,7 @@ isUntranslatable()でモデル呼び出し自体をスキップするため0回�
 | proper-noun-preservation | 5/5 |
 
 **全6ケース×5回 = 30/30合格。** モデルは `gemini-3.1-flash-lite`。
-生データ: `eval/results/2026-09-25.json`。
+生データ: `eval/results/2026-09-24.json`（ファイル名の日付はUTC基準）。
 
 注: プロンプトのルール3は「固有名詞は書かれたまま保持し、翻訳・音訳しない」だが、
 実際の出力は5回とも "Kenji"/"Kyoto" とローマ字表記だった（英文としてはこの方が自然）。

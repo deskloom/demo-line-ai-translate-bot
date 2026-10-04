@@ -11,7 +11,7 @@ test("detects English text", () => {
 });
 
 test("mixed text leans on majority script", () => {
-  assert.equal(detectLang("Hello 元気ですか"), "ja"); // 5 kana/kanji vs fewer latin letters... see below
+  assert.equal(detectLang("Hello 元気ですか"), "ja"); // any kana present => ja
 });
 
 test("unknown when no script chars at all", () => {
