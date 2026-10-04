@@ -56,3 +56,26 @@ test("fitsBudget and planChunks agree by construction (same underlying function)
 test("throws on a non-positive budget", () => {
   assert.throws(() => computeChunkPlan("hi", 0));
 });
+
+test("planReplyChunks returns the plan untouched when it fits", async () => {
+  const { planReplyChunks } = await import("../src/chunk.js");
+  assert.deepEqual(planReplyChunks("a\n\nb", 100, 5), ["a\n\nb"]);
+});
+
+test("planReplyChunks truncates to maxChunks and marks the end with （以下省略）", async () => {
+  const { planReplyChunks } = await import("../src/chunk.js");
+  const text = Array.from({ length: 8 }, (_, i) => `p${i}${"x".repeat(8)}`).join("\n\n");
+  const out = planReplyChunks(text, 10, 5);
+  assert.equal(out.length, 5);
+  assert.ok(out[4].endsWith("（以下省略）"));
+  assert.ok(!out[3].includes("（以下省略）"));
+});
+
+test("planReplyChunks keeps the marked last message within LINE's 5000-char limit", async () => {
+  const { planReplyChunks } = await import("../src/chunk.js");
+  const text = Array.from({ length: 7 }, () => "y".repeat(5000)).join("\n\n");
+  const out = planReplyChunks(text, 5000, 5);
+  assert.equal(out.length, 5);
+  assert.ok(out[4].length <= 5000);
+  assert.ok(out[4].endsWith("（以下省略）"));
+});

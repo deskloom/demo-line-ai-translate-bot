@@ -62,3 +62,18 @@ test("fallbackSpeakerLabel never leaks the full userId", () => {
   assert.equal(label, "user-567890");
   assert.ok(!label.includes("Uabcdef1234567890"));
 });
+
+test("dry-run logs only counts and lengths, never the message text", async () => {
+  const logs = [];
+  const orig = console.log;
+  console.log = (...args) => logs.push(JSON.stringify(args));
+  try {
+    await replyText({}, "tok", ["secret-body-one", "secret-body-two"]);
+  } finally {
+    console.log = orig;
+  }
+  const out = logs.join("\n");
+  assert.ok(!out.includes("secret-body"));
+  assert.ok(out.includes('"messageCount":2'));
+  assert.ok(out.includes("15"));
+});

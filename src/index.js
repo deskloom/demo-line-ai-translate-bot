@@ -6,7 +6,7 @@ import { detectLang, isUntranslatable } from "./lang.js";
 import { translateMessage } from "./translate.js";
 import { replyText, getDisplayName, fallbackSpeakerLabel } from "./line.js";
 import { insertMessage, getRecentContext, deleteOlderThan } from "./db.js";
-import { fitsBudget, planChunks } from "./chunk.js";
+import { fitsBudget, planChunks, planReplyChunks } from "./chunk.js";
 
 const MAX_REPLY_CHUNKS = 5; // LINE Messaging API allows at most 5 messages per reply call.
 
@@ -136,10 +136,9 @@ async function processOneEvent(event, env) {
 
   // Split the translated output itself into reply-sized chunks too, using the
   // same budget/plan function, so a long translation still respects LINE's
-  // per-message size and the 5-messages-per-reply limit.
-  const replyChunks = fitsBudget(translation, budget, MAX_REPLY_CHUNKS)
-    ? planChunks(translation, budget)
-    : planChunks(translation, budget).slice(0, MAX_REPLY_CHUNKS);
+  // per-message size and the 5-messages-per-reply limit. If it is cut, the last
+  // message says so ("（以下省略）").
+  const replyChunks = planReplyChunks(translation, budget, MAX_REPLY_CHUNKS);
 
   await replyText(env, replyToken, replyChunks);
 }

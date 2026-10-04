@@ -77,3 +77,24 @@ export function fitsBudget(text, budget, maxChunks) {
 export function planChunks(text, budget) {
   return computeChunkPlan(text, budget).chunks;
 }
+
+const TRUNCATION_MARK = "（以下省略）";
+const LINE_MAX_MESSAGE_CHARS = 5000; // LINE per-message text limit.
+
+/**
+ * Chunks for a reply: the plan from planChunks(), capped at maxChunks. When the
+ * cap drops content, the last kept chunk ends with "（以下省略）" so the cut is
+ * never silent (the mark never pushes it past LINE's per-message limit).
+ * @param {string} text
+ * @param {number} budget
+ * @param {number} maxChunks
+ * @returns {string[]}
+ */
+export function planReplyChunks(text, budget, maxChunks) {
+  const chunks = planChunks(text, budget);
+  if (chunks.length <= maxChunks) return chunks;
+  const kept = chunks.slice(0, maxChunks);
+  const last = kept[maxChunks - 1].slice(0, LINE_MAX_MESSAGE_CHARS - TRUNCATION_MARK.length);
+  kept[maxChunks - 1] = last + TRUNCATION_MARK;
+  return kept;
+}

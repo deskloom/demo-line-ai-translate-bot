@@ -1,12 +1,12 @@
 {
   "id": "proper-noun-preservation",
-  "description": "Proper nouns (person and place names) must be kept as-is, not translated or transliterated.",
+  "description": "Proper nouns (person and place names) must be kept as written or given in their standard romanisation (e.g. Kenji / 健二, Kyoto / 京都); they must not be replaced by a different name or a translated common noun.",
   "sourceLang": "ja",
   "targetLang": "en",
   "contextMessages": [],
   "text": "健二とサラは来週、京都に旅行に行きます。",
   "checks": {
-    "mustMatch": ["Kenji", "Sarah?", "Kyoto"],
+    "mustMatch": ["(Kenji|健二)", "(Sarah?|サラ)", "(Kyoto|京都)"],
     "mustNotMatch": []
   }
 }

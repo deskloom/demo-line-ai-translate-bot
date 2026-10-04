@@ -31,7 +31,8 @@ export async function replyText(env, replyToken, texts, fetchImpl = fetch) {
   if (!token) {
     console.log("[line] DRY_RUN reply (no LINE_CHANNEL_ACCESS_TOKEN)", {
       replyToken,
-      messages,
+      messageCount: messages.length,
+      charLengths: messages.map((m) => m.text.length),
     });
     return { dryRun: true, messages };
   }

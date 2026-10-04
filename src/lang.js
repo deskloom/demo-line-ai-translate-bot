@@ -1,6 +1,8 @@
 // Lightweight ja/en language detection by script ratio. No external deps.
 // Also detects "nothing to translate" text (emoji/stamp-only, pure punctuation, empty).
 
+// Hiragana, katakana (incl. phonetic extensions) and halfwidth katakana.
+const KANA_RE = /[぀-ゟ゠-ヿㇰ-ㇿｦ-ﾟ]/;
 const KANA_KANJI_RE = /[぀-ゟ゠-ヿ一-鿿]/g;
 const LATIN_RE = /[A-Za-z]/g;
 // Emoji + LINE stamp placeholder text + pure symbol/whitespace text.
@@ -14,6 +16,12 @@ const WORDISH_RE = /[\p{L}\p{N}]/u;
  */
 export function detectLang(text) {
   if (!text) return "unknown";
+  // Any kana at all means Japanese: Latin brand names ("Google", "iPhone") often
+  // outnumber the kana in short Japanese messages, so a pure ratio misjudges
+  // them as English. Trade-off: an English sentence quoting one Japanese word
+  // is judged "ja" too, which is benign (the model returns it nearly as-is).
+  // The ratio below only decides kana-less text (kanji + Latin).
+  if (KANA_RE.test(text)) return "ja";
   const kana = (text.match(KANA_KANJI_RE) || []).length;
   const latin = (text.match(LATIN_RE) || []).length;
   if (kana === 0 && latin === 0) return "unknown";
