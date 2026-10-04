@@ -1,4 +1,4 @@
-# LINE × AI 日英自動翻訳ボット（Cloudflare Workers + D1）
+# LINE多言語グループ翻訳ボット（デモ）— Cloudflare Workers + D1
 
 ポートフォリオ用のデモプロジェクトです。LINEのグループ/ルーム/1:1チャットに投稿された
 メッセージを日本語⇄英語で自動翻訳して返信するボットを、Cloudflare Workers + D1 だけ
@@ -52,9 +52,19 @@ eval/run-eval.js … 本番と同じ translate.js を使い、fixtures/*.json �
    ```
    ローカル開発では `.dev.vars`（gitignore済み）に平文で置く。
 5. Gemini APIキーを取得する（[ai.google.dev](https://ai.google.dev)）。モデル名は
-   `wrangler.jsonc` の `vars.GEMINI_MODEL` で変更可能（既定 `gemini-3.1-flash-lite` —
-   Google公式ドキュメントが低コスト・長期安定運用向けとして案内する現行モデル。
-   2026-09-25 に context7 経由で `ai.google.dev` の最新ドキュメントを確認して選定した）。
+   `wrangler.jsonc` の `vars.GEMINI_MODEL` で変更可能（既定 `gemini-3.1-flash-lite`）。
+6. Workerをデプロイする。
+   ```
+   npx wrangler deploy
+   ```
+   完了時に表示される `https://<worker-name>.<subdomain>.workers.dev` がWorkerのURLになる。
+7. LINE Developers コンソールの「Messaging API設定」で、Webhook URLに
+   `https://<worker-name>.<subdomain>.workers.dev/webhook` を設定し、
+   「Webhookの利用」をオンにする（「検証」ボタンで疎通を確認できる）。
+8. LINE Official Account Manager の「設定 > 応答設定」で「応答メッセージ」をオフにする
+   （オンのままだとボットの翻訳返信とは別に自動応答が送られる）。
+9. グループに招待して使う場合は、LINE Developers コンソールの「Messaging API設定」で
+   「グループ・複数人チャットへの参加を許可する」をオンにする（既定はオフ）。
 
 ## テストの実行方法
 
@@ -84,9 +94,7 @@ npm test
 npx wrangler d1 migrations apply demo-line-ai-translate-bot-db --local
 npx wrangler dev --local --port 18787
 ```
-（Windows環境ではデフォルトの8787番ポートが `bind(): アクセス許可で禁じられた方法で
-ソケットにアクセスしようとしました (os error 10013)` で失敗したため、18787番に変更して
-起動した。）
+（ポートは18787番を指定。）
 
 `.dev.vars` に `LINE_CHANNEL_SECRET` のみを設定（アクセストークン・Gemini鍵は未設定＝
 DRY_RUN経路とモック翻訳経路を検証）し、以下を実施:
@@ -107,43 +115,22 @@ DRY_RUN経路とモック翻訳経路を検証）し、以下を実施:
 ### 3. 評価ハーネスの実本番実行（Gemini API）
 
 ```
-GEMINI_API_KEY="$(node -e "process.stdout.write(require('<gemini.local.json>').api_key)")" \
-  node eval/run-eval.js
+GEMINI_API_KEY=xxx npm run eval
 ```
-APIキーはコマンド実行中の環境変数としてのみ読み込み、画面出力・ファイルへの記録は
-していない（キー自体はリポジトリ外のローカルファイルにのみ存在）。
+`GEMINI_API_KEY` は環境変数から読み込む（未設定の場合は実APIを呼ばずにスキップする）。
 
 1回の実行あたり実API呼び出しは最大25回（5ケース×5回。`emoji-only-no-reply`は
-isUntranslatable()でモデル呼び出し自体をスキップするため0回）。実行時、Gemini側が
-構造化JSON出力（`response_schema`指定）のリクエストに対して断続的に
-`503 UNAVAILABLE`（"currently experiencing high demand"）を返したため、
-`eval/run-eval.js`に503時のみ指数バックオフで再試行する処理（最大6回、8秒刻みで
-延長）を追加している。これは翻訳品質の問題ではなくAPI側の一時的な混雑によるものと
-判断した（同一プロンプトを単純な`generateContent`で試すと200が返り、
-`response_schema`付きのときだけ503になることを個別に確認した）。
+isUntranslatable()でモデル呼び出し自体をスキップするため0回）。構造化JSON出力で
+`503 UNAVAILABLE` が断続的に返ることがあるため、ハーネスは503時のみ指数バックオフで
+再試行する。
 
-#### 評価ハーネス自体の不具合を2件見つけて直した経緯
+評価ハーネスの正規表現は、誤検知を避けるため狙いを絞っている。たとえば
+`omitted-subject-third-person` は「Iが行為の主語になっているパターン」
+（`I'm/I am going`, `I go/will go`）だけを禁止し、"I think he is ..." のような
+ヘッジ表現は誤りとみなさない。また三人称の主語は `(he|Kenji)` のどちらでも合格とする
+（文脈中の名前を使う訳も正解のため）。
 
-プロンプトの短答例文を機密性の理由で別の通学手段の題材（「電車」）に
-差し替えた後、実際にGemini APIで検証する過程で、モデルではなく**評価ハーネスの
-チェック（正規表現）側の不備**を2件見つけて修正した。以前（差し替え前）の
-Before/After生データはこの変更に伴い削除済みのため、ここでは経緯を文章でのみ記録し、
-数値としてのBefore/Afterは示さない。
-
-1. `omitted-subject-third-person`のmustNotMatchが`\bI\b`のような広すぎる
-   パターンで、"I **think** he is going to karaoke."という単なる推量のヘッジ表現
-   まで「主語を話者に取り違えた」と誤検知していた。実際のモデル出力は三人称
-   （he）を正しく主語に保っていた。→ 「Iが行為の主語になっているパターン」
-   （`I'm/I am going`, `I go/will go`）だけを禁止するよう修正。
-2. 同じケースのmustMatchが`\bhe\b`のみを要求しており、モデルが文脈中の名前を
-   使って"I think **Kenji** is going to karaoke."と訳した回（これはルール3
-   「固有名詞はそのまま保持する」にも合致する、むしろ丁寧な訳）を不合格として
-   いた。→ mustMatchを`\b(he|Kenji)\b`に広げ、どちらの表現でも合格とした。
-
-いずれも「モデルの誤り」ではなく「チェック側が正解の言い換えを弾いていた」ケース
-であり、モデルの振る舞いやプロンプトを変えて数値を良くしたわけではない。
-
-#### 結果（最終実行: 2026-09-25 JST / ファイル内タイムスタンプはUTCで09-24）
+#### 結果（実行日: 2026-09-25）
 
 | ケース | 結果 |
 |---|---|
